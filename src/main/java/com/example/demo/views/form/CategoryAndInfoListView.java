@@ -19,16 +19,13 @@ import org.springframework.data.domain.PageRequest;
 
 /*
 TODO
-- category grid details (InfoGrid)
-	- not showing
-	- set dataprovider for InfoGrid
+- category grid details
 */
 @PageTitle("View simple")
 @Route(value = "simple")
 public class CategoryAndInfoListView extends VerticalLayout {
 	
 	Grid<Category> categoryGrid = new Grid<>(Category.class);
-	//Grid<Info> infoGrid = new Grid<>(Info.class);
 	
 	CategoryForm categoryForm;
 	InfoForm infoForm;
@@ -54,7 +51,7 @@ public class CategoryAndInfoListView extends VerticalLayout {
     }
 	
 	private void configureGrids() {
-		categoryGrid.setSizeFull();
+		//categoryGrid.setSizeFull();
 		
 		categoryGrid.setColumns("name");
 		categoryGrid.getColumns().forEach(column -> column.setAutoWidth(true));
@@ -63,20 +60,24 @@ public class CategoryAndInfoListView extends VerticalLayout {
 			e -> editCategory(e.getValue())
 		);
 		
-		// the new way
+		// set up dataprovider
 		categoryGrid.setItems(
-			q -> categoryService.findAll(
-				PageRequest.of(
-					q.getPage(),
-					q.getPageSize(),
-					VaadinSpringDataHelpers.toSpringDataSort(q)
-				)
-			).stream()
+			q -> {
+				System.out.println("updated category grid");
+				return categoryService.findAll(
+					PageRequest.of(
+						q.getPage(),
+						q.getPageSize(),
+						VaadinSpringDataHelpers.toSpringDataSort(q)
+					)
+				).stream();
+			}
 		);
 
+		// set up item details toggle button component
 		categoryGrid.addColumn(
 			new ComponentRenderer<>(category -> {
-				Button btnToggle = new Button("open detail");
+				Button btnToggle = new Button("toggle exercises");
 
 				btnToggle.addClickListener(event -> {
 					categoryGrid.setDetailsVisible(
@@ -87,18 +88,38 @@ public class CategoryAndInfoListView extends VerticalLayout {
 				return btnToggle;
 			})
 		);
-		
 		categoryGrid.setDetailsVisibleOnClick(false);
 		
+		// set up item details
 		categoryGrid.setItemDetailsRenderer(
 			new ComponentRenderer<>(
-				InfoGrid::new,
-				(InfoGrid grid, Category category) -> {
-					grid.setItems(infoService.findAllByCategory(category));
+				() -> new Grid<>(Info.class),
+				(Grid<Info> infoGrid, Category category) -> {
+					//infoGrid.setSizeFull();
+					//infoGrid.setAllRowsVisible(true);
+
+					infoGrid.setColumns("name");
+					infoGrid.addColumn(info -> info.getCategory().getName())
+						.setHeader("Category");
+
+					infoGrid.getColumns().forEach(column -> column.setAutoWidth(true));
+		
+					// set up dataprovider
+					infoGrid.setItems(
+						q -> {
+							System.out.println("updated details of: " + category.getName());
+							return infoService.findAllByCategory(
+								category,
+								PageRequest.of(
+									q.getPage(),
+									q.getPageSize(),
+									VaadinSpringDataHelpers.toSpringDataSort(q)
+								)
+							).stream();
+						}
+					);
 					
-					System.out.println("InfoGrid created: " + category.getName());
-					
-					grid.asSingleSelect().addValueChangeListener(
+					infoGrid.asSingleSelect().addValueChangeListener(
 						e -> editInfo(e.getValue())
 					);
 				}
@@ -138,7 +159,7 @@ public class CategoryAndInfoListView extends VerticalLayout {
 	}
 	
 	private Component getContent() {
-		VerticalLayout grids = new VerticalLayout(categoryGrid);//, infoGrid);
+		VerticalLayout grids = new VerticalLayout(categoryGrid);
 		VerticalLayout forms = new VerticalLayout(categoryForm, infoForm);
 		
 		HorizontalLayout content = new HorizontalLayout(
@@ -213,8 +234,6 @@ public class CategoryAndInfoListView extends VerticalLayout {
 		List<Category> categories = categoryService.findAll();
 		
 		categoryGrid.getDataProvider().refreshAll();
-		
-		//infoGrid.setItems(infoService.findAll());
 		infoForm.setCategories(categories);
 	}
 	

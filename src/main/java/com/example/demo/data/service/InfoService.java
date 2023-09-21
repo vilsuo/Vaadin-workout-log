@@ -7,6 +7,8 @@ import com.example.demo.data.repository.InfoRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /*
@@ -28,6 +30,16 @@ public class InfoService {
 	
 	public List<Info> findAllByCategory(Category category) {
 		return infoRepository.findAllByCategory(category);
+	}
+	
+	public List<Info> findAllByCategory(Category category, PageRequest pageRequest) {
+        Page<Info> page = infoRepository.findAllByCategory(category, pageRequest);
+		//, Sort.by(Sort.Order.asc("id"))));
+        return page.getContent();
+    }
+	
+	public Long count() {
+		return infoRepository.count();
 	}
 	
 	public Optional<Info> findByNameIgnoreCase(String name) {
