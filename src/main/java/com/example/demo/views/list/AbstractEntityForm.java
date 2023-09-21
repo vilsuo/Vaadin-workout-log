@@ -1,5 +1,5 @@
 
-package com.example.demo.views.form;
+package com.example.demo.views.list;
 
 import com.example.demo.data.entity.AbstractEntity;
 import com.example.demo.views.event.CloseEvent;

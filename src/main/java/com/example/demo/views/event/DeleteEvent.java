@@ -2,7 +2,7 @@
 package com.example.demo.views.event;
 
 import com.example.demo.data.entity.AbstractEntity;
-import com.example.demo.views.form.AbstractEntityForm;
+import com.example.demo.views.list.AbstractEntityForm;
 
 public class DeleteEvent<T extends AbstractEntity> extends AbstractEntityFormEvent<T> {
 	

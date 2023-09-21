@@ -1,30 +1,34 @@
 
-package com.example.demo.views.list;
+package com.example.demo.views.form;
 
 import com.example.demo.data.entity.Category;
 import com.example.demo.data.entity.Info;
 import com.example.demo.data.service.CategoryService;
 import com.example.demo.data.service.InfoService;
-import com.example.demo.views.form.CategoryForm;
-import com.example.demo.views.form.InfoForm;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 
+/*
+TODO
+- category grid details (InfoGrid)
+	- not showing
+	- set dataprovider for InfoGrid
+*/
 @PageTitle("View simple")
 @Route(value = "simple")
 public class CategoryAndInfoListView extends VerticalLayout {
 	
 	Grid<Category> categoryGrid = new Grid<>(Category.class);
-	Grid<Info> infoGrid = new Grid<>(Info.class);
+	//Grid<Info> infoGrid = new Grid<>(Info.class);
 	
 	CategoryForm categoryForm;
 	InfoForm infoForm;
@@ -50,9 +54,7 @@ public class CategoryAndInfoListView extends VerticalLayout {
     }
 	
 	private void configureGrids() {
-		// category
 		categoryGrid.setSizeFull();
-		//categoryGrid.setAllRowsVisible(true);
 		
 		categoryGrid.setColumns("name");
 		categoryGrid.getColumns().forEach(column -> column.setAutoWidth(true));
@@ -61,59 +63,27 @@ public class CategoryAndInfoListView extends VerticalLayout {
 			e -> editCategory(e.getValue())
 		);
 		
-		configureCategoryGridDetails();
-		/*
-		moved to method configureCategoryGridDetails
+		// the new way
+		categoryGrid.setItems(
+			q -> categoryService.findAll(
+				PageRequest.of(
+					q.getPage(),
+					q.getPageSize(),
+					VaadinSpringDataHelpers.toSpringDataSort(q)
+				)
+			).stream()
+		);
+
 		categoryGrid.addColumn(
 			new ComponentRenderer<>(category -> {
 				Button btnToggle = new Button("open detail");
-				
-				btnToggle.addClickListener(event -> {
-					categoryGrid.setDetailsVisible(
-						category, !categoryGrid.isDetailsVisible(category
-					));
-				});
-				
-				return btnToggle;
-			})
-		);
-		
-		categoryGrid.setDetailsVisibleOnClick(false);
-		categoryGrid.setItemDetailsRenderer(
-			new ComponentRenderer<>(
-				Grid<Info>::new,
-				(Grid<Info> grid, Category category) -> {
-					grid.setItems(infoService.findAllByCategory(category));
-				}
-			)
-		);
-		*/
-		
-		// info
-		infoGrid.setSizeFull();
-		
-		infoGrid.setColumns("name");
-		infoGrid.addColumn(info -> info.getCategory().getName())
-			.setHeader("Category");
-		
-		infoGrid.getColumns().forEach(column -> column.setAutoWidth(true));
-		
-		infoGrid.asSingleSelect().addValueChangeListener(
-			e -> editInfo(e.getValue())
-		);
-	}
-	
-	private void configureCategoryGridDetails() {
-		categoryGrid.addColumn(
-			new ComponentRenderer<>(category -> {
-				Button btnToggle = new Button("open detail");
-				
+
 				btnToggle.addClickListener(event -> {
 					categoryGrid.setDetailsVisible(
 						category, !categoryGrid.isDetailsVisible(category)
 					);
 				});
-				
+
 				return btnToggle;
 			})
 		);
@@ -122,14 +92,14 @@ public class CategoryAndInfoListView extends VerticalLayout {
 		
 		categoryGrid.setItemDetailsRenderer(
 			new ComponentRenderer<>(
-				() -> new Grid<>(Info.class),
-				(Grid<Info> grid, Category category) -> {
-					grid.setColumns("name");
+				InfoGrid::new,
+				(InfoGrid grid, Category category) -> {
 					grid.setItems(infoService.findAllByCategory(category));
-					//grid.setAllRowsVisible(true);
-					System.out.println(
-						"category: " + category + 
-						", size: " + infoService.findAllByCategory(category).size()
+					
+					System.out.println("InfoGrid created: " + category.getName());
+					
+					grid.asSingleSelect().addValueChangeListener(
+						e -> editInfo(e.getValue())
 					);
 				}
 			)
@@ -168,7 +138,7 @@ public class CategoryAndInfoListView extends VerticalLayout {
 	}
 	
 	private Component getContent() {
-		VerticalLayout grids = new VerticalLayout(categoryGrid, infoGrid);
+		VerticalLayout grids = new VerticalLayout(categoryGrid);//, infoGrid);
 		VerticalLayout forms = new VerticalLayout(categoryForm, infoForm);
 		
 		HorizontalLayout content = new HorizontalLayout(
@@ -235,16 +205,16 @@ public class CategoryAndInfoListView extends VerticalLayout {
 	}
 	
 	private void addInfo() {
-		infoGrid.asSingleSelect().clear();
+		//infoGrid.asSingleSelect().clear();
 		editInfo(new Info());
 	}
 	
 	private void updateLists() {
 		List<Category> categories = categoryService.findAll();
 		
-		categoryGrid.setItems(categories);
+		categoryGrid.getDataProvider().refreshAll();
 		
-		infoGrid.setItems(infoService.findAll());
+		//infoGrid.setItems(infoService.findAll());
 		infoForm.setCategories(categories);
 	}
 	

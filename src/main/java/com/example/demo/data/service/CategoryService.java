@@ -6,6 +6,8 @@ import com.example.demo.data.repository.CategoryRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /*
@@ -27,6 +29,16 @@ public class CategoryService {
 	
 	public List<Category> findAll() {
 		return categoryRepository.findAll();
+	}
+	
+	public List<Category> findAll(PageRequest pageRequest) {
+        Page<Category> page = categoryRepository.findAll(pageRequest);
+		//, Sort.by(Sort.Order.asc("id"))));
+        return page.getContent();
+    }
+	
+	public Long count() {
+		return categoryRepository.count();
 	}
 	
 	public Optional<Category> findByNameIgnoreCase(String name) {
