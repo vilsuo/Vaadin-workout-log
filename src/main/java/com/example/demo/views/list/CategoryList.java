@@ -20,8 +20,8 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@PageTitle("Categories")
-@Route(value = "categories")
+//@PageTitle("Categories")
+//@Route(value = "categories")
 public class CategoryList extends VerticalLayout {
 	
 	private final CategoryService categoryService;
@@ -133,12 +133,8 @@ public class CategoryList extends VerticalLayout {
 			
 			add(new Hr());
 
-			addItem("Rename", e -> e.getItem().ifPresent(category -> {
-				System.out.printf("Rename: %s%n", category.getName());
-			}));
-			
-			addItem("Delete", e -> e.getItem().ifPresent(category -> {
-				System.out.printf("Delete: %s%n", category.getName());
+			addItem("Edit", e -> e.getItem().ifPresent(category -> {
+				System.out.printf("Edit: %s%n", category.getName());
 			}));
 			
 			setDynamicContentHandler(category -> {

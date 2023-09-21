@@ -15,7 +15,6 @@ public class Category extends AbstractEntity {
 	@NotBlank
 	private String name;
 	
-
 	public Category(String name) {
 		this.name = name;
 	}

@@ -16,7 +16,7 @@ import com.vaadin.flow.data.binder.Binder;
 
 public abstract class AbstractEntityForm<T extends AbstractEntity> extends FormLayout {
 	
-	private final Binder<T> binder;
+	protected final Binder<T> binder;
 	
 	public AbstractEntityForm(Class<T> clazz) {
 		binder = new BeanValidationBinder<>(clazz);
@@ -57,7 +57,7 @@ public abstract class AbstractEntityForm<T extends AbstractEntity> extends FormL
 	
 	private void validateAndSave() {
 		if (binder.isValid()) {
-			fireEvent(new SaveEvent<>(this, binder.getBean())); 
+			fireEvent(new SaveEvent<T>(this, binder.getBean())); 
 		}
 	}
 }

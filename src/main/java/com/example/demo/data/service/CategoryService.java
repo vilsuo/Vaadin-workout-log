@@ -3,10 +3,15 @@ package com.example.demo.data.service;
 
 import com.example.demo.data.entity.Category;
 import com.example.demo.data.repository.CategoryRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
+/*
+TODO
+- test save
+*/
 @Service
 public class CategoryService {
 	
@@ -40,6 +45,10 @@ public class CategoryService {
 		}
 	}
 	
+	public Category save(Category category) {
+		return categoryRepository.save(category);
+	}
+	
 	//public Category save(Category category) {
 	//	final String name = category.getName();
 	//	Optional<Category> opt = categoryRepository.findByNameIgnoreCase(name);
@@ -68,6 +77,7 @@ public class CategoryService {
 		}
 	}
 	
+	@Transactional
 	public void delete(Category category) {
 		infoService.deleteByCategory(category);
 		categoryRepository.delete(category);

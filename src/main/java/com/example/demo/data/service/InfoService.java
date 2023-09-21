@@ -4,10 +4,15 @@ package com.example.demo.data.service;
 import com.example.demo.data.entity.Category;
 import com.example.demo.data.entity.Info;
 import com.example.demo.data.repository.InfoRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
+/*
+TODO
+- test save
+*/
 @Service
 public class InfoService {
 	
@@ -41,9 +46,13 @@ public class InfoService {
 		}
 	}
 	
+	public Info save(Info info) {
+		return infoRepository.save(info);
+	}
+	
 	//public Info save(Info info) {
 	//	final String name = info.getName();
-	//	Optional<Info> opt = infoRepository.findByNameIgnoreCase(name);
+	//	Optional<Info> opt = findByNameIgnoreCase(name);
 	//	
 	//	if (opt.isEmpty() || opt.get().equals(info)) {
 	//		return infoRepository.save(info);
@@ -78,6 +87,7 @@ public class InfoService {
 		infoRepository.delete(info);
 	}
 	
+	@Transactional
 	public void deleteByCategory(Category category) {
 		infoRepository.deleteByCategory(category);
 	}
