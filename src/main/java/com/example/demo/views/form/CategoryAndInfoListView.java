@@ -14,7 +14,9 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 
 /*
@@ -29,6 +31,8 @@ public class CategoryAndInfoListView extends VerticalLayout {
 	
 	CategoryForm categoryForm;
 	InfoForm infoForm;
+	
+	private final Map<Category, Button> detailsToggleButtonMap = new HashMap<>();
 	
 	private final CategoryService categoryService;
 	private final InfoService infoService;
@@ -62,26 +66,38 @@ public class CategoryAndInfoListView extends VerticalLayout {
 		
 		// set up dataprovider
 		categoryGrid.setItems(
-			q -> {
-				System.out.println("updated category grid");
-				return categoryService.findAll(
-					PageRequest.of(
-						q.getPage(),
-						q.getPageSize(),
-						VaadinSpringDataHelpers.toSpringDataSort(q)
-					)
-				).stream();
-			}
+			query -> categoryService.findAll(
+				PageRequest.of(
+					query.getPage(),
+					query.getPageSize(),
+					VaadinSpringDataHelpers.toSpringDataSort(query)
+				)
+			).stream()
 		);
 
 		// set up item details toggle button component
 		categoryGrid.addColumn(
 			new ComponentRenderer<>(category -> {
-				Button btnToggle = new Button("toggle exercises");
-
+				/*
+				Components will occasionally be generated again during runtime. 
+				If you have a state in your component and not in the data 
+				object, you need to handle storing it yourself.
+				*/
+				if (detailsToggleButtonMap.containsKey(category)) {
+					return detailsToggleButtonMap.get(category);
+				}
+				
+				Button btnToggle = new Button("Show exercises");
+				detailsToggleButtonMap.put(category, btnToggle);
+				
 				btnToggle.addClickListener(event -> {
-					categoryGrid.setDetailsVisible(
-						category, !categoryGrid.isDetailsVisible(category)
+					final boolean isVisible = categoryGrid
+						.isDetailsVisible(category);
+					
+					categoryGrid.setDetailsVisible(category, !isVisible);
+					
+					btnToggle.setText(
+						(isVisible ? "Show" : "Hide") + " exercises"
 					);
 				});
 
@@ -97,7 +113,7 @@ public class CategoryAndInfoListView extends VerticalLayout {
 				(Grid<Info> infoGrid, Category category) -> {
 					//infoGrid.setSizeFull();
 					//infoGrid.setAllRowsVisible(true);
-
+					
 					infoGrid.setColumns("name");
 					infoGrid.addColumn(info -> info.getCategory().getName())
 						.setHeader("Category");
@@ -106,17 +122,14 @@ public class CategoryAndInfoListView extends VerticalLayout {
 		
 					// set up dataprovider
 					infoGrid.setItems(
-						q -> {
-							System.out.println("updated details of: " + category.getName());
-							return infoService.findAllByCategory(
-								category,
-								PageRequest.of(
-									q.getPage(),
-									q.getPageSize(),
-									VaadinSpringDataHelpers.toSpringDataSort(q)
-								)
-							).stream();
-						}
+						query -> infoService.findAllByCategory(
+							category,
+							PageRequest.of(
+								query.getPage(),
+								query.getPageSize(),
+								VaadinSpringDataHelpers.toSpringDataSort(query)
+							)
+						).stream()
 					);
 					
 					infoGrid.asSingleSelect().addValueChangeListener(
