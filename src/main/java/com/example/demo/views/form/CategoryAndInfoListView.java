@@ -19,12 +19,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 
-/*
-TODO
-- category grid details
-*/
 @PageTitle("View simple")
-@Route(value = "simple")
+@Route(value = "")
 public class CategoryAndInfoListView extends VerticalLayout {
 	
 	Grid<Category> categoryGrid = new Grid<>(Category.class);
